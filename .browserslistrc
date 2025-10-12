@@ -1,7 +1,7 @@
 [production]
-chrome >= 90
-edge >= 95
-safari >= 14
+chrome >= 120
+edge >= 120
+safari >= 16
 
 [development]
 last 1 chrome version

@@ -6,7 +6,6 @@ import HomeService from "apis/services/Home";
 
 const Home = loadable(/* #__LOADABLE__ */ () => import("pages/Home"), null);
 
-
 const routes: PreFetchRouteObject[] = [
   {
     path: "/",

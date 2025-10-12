@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React SSR 架构流程图</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            font-size: 1.1em;
+            margin-bottom: 40px;
+        }
+
+        .phase {
+            margin: 30px 0;
+            padding: 25px;
+            border-radius: 12px;
+            background: #f7fafc;
+            border-left: 5px solid;
+        }
+
+        .phase-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .phase-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .webpack-phase {
+            border-left-color: #8dd6f9;
+        }
+
+        .webpack-phase .phase-icon {
+            background: #8dd6f9;
+        }
+
+        .server-phase {
+            border-left-color: #68d391;
+        }
+
+        .server-phase .phase-icon {
+            background: #68d391;
+        }
+
+        .client-phase {
+            border-left-color: #f6ad55;
+        }
+
+        .client-phase .phase-icon {
+            background: #f6ad55;
+        }
+
+        .data-phase {
+            border-left-color: #fc8181;
+        }
+
+        .data-phase .phase-icon {
+            background: #fc8181;
+        }
+
+        .flow-section {
+            margin: 20px 0;
+        }
+
+        .flow-title {
+            font-size: 1.2em;
+            color: #2d3748;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-left: 15px;
+            border-left: 3px solid #667eea;
+        }
+
+        .flow-steps {
+            display: grid;
+            gap: 15px;
+        }
+
+        .step {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .step:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .step-number {
+            position: absolute;
+            left: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9em;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+        }
+
+        .step-content {
+            margin-left: 25px;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+
+        .step-description {
+            color: #4a5568;
+            line-height: 1.6;
+            font-size: 0.95em;
+        }
+
+        .code-snippet {
+            background: #2d3748;
+            color: #a0aec0;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+        }
+
+        .code-snippet .keyword {
+            color: #fc8181;
+        }
+
+        .code-snippet .function {
+            color: #68d391;
+        }
+
+        .code-snippet .string {
+            color: #f6ad55;
+        }
+
+        .arrow-down {
+            text-align: center;
+            color: #cbd5e0;
+            font-size: 2em;
+            margin: 10px 0;
+        }
+
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .tech-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .tech-name {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .tech-version {
+            color: #718096;
+            font-size: 0.9em;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: white;
+            font-weight: 600;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #667eea;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .feature-list li {
+            padding: 5px 0;
+            color: #4a5568;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #68d391;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .phase-title {
+                font-size: 1.2em;
+            }
+
+            .tech-stack {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 React SSR 架构流程图</h1>
+        <p class="subtitle">React 19 + Koa + Webpack + TypeScript</p>
+
+        <!-- 技术栈 -->
+        <div class="phase">
+            <div class="phase-title">
+                <div class="phase-icon" style="background: #667eea;">🛠️</div>
+                核心技术栈
+            </div>
+            <div class="tech-stack">
+                <div class="tech-item">
+                    <div class="tech-name">React</div>
+                    <div class="tech-version">v19.1.0</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-name">Koa</div>
+                    <div class="tech-version">v2.14.1</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-name">Webpack</div>
+                    <div class="tech-version">v5.78.0</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-name">TypeScript</div>
+                    <div class="tech-version">v5.0.3</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-name">React Query</div>
+                    <div class="tech-version">v5.83.0</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-name">Loadable Components</div>
+                    <div class="tech-version">v5.16.7</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phase 1: Webpack 构建阶段 -->
+        <div class="phase webpack-phase">
+            <div class="phase-title">
+                <div class="phase-icon">1</div>
+                Webpack 构建阶段
+            </div>
+
+            <div class="flow-section">
+                <div class="flow-title">📦 双Bundle构建策略</div>
+                <div class="flow-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <div class="step-title">客户端Bundle构建</div>
+                            <div class="step-description">
+                                <strong>入口：</strong> <code>app/client/index.tsx</code><br>
+                                <strong>目标：</strong> 浏览器环境 (target: 'browserslist')<br>
+                                <strong>输出：</strong> <code>build/client/</code><br>
+                                <strong>包含：</strong> JS文件、CSS文件、静态资源、Loadable统计文件
+                            </div>
+                            <div class="code-snippet">
+<span class="keyword">entry:</span> {
+  <span class="keyword">client:</span> [<span class="string">'app/client/index.tsx'</span>]
+},
+<span class="keyword">output:</span> {
+  <span class="keyword">path:</span> <span class="string">'build/client'</span>,
+  <span class="keyword">publicPath:</span> <span class="string">'/static/client/'</span>
+}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <div class="step-title">服务端Bundle构建</div>
+                            <div class="step-description">
+                                <strong>入口：</strong> <code>app/server/server.ts</code> / <code>app/server/serverless.ts</code><br>
+                                <strong>目标：</strong> Node.js环境 (target: 'node')<br>
+                                <strong>输出：</strong> <code>build/server.js</code><br>
+                                <strong>特点：</strong> 忽略样式和静态资源、使用CommonJS格式
+                            </div>
+                            <div class="code-snippet">
+<span class="keyword">entry:</span> {
+  <span class="keyword">server:</span> <span class="string">'app/server/server.ts'</span>,
+  <span class="keyword">serverless:</span> <span class="string">'app/server/serverless.ts'</span>
+},
+<span class="keyword">externalsPresets:</span> { <span class="keyword">node:</span> <span class="keyword">true</span> }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <div class="step-title">代码分割配置</div>
+                            <div class="step-description">
+                                <strong>工具：</strong> @loadable/webpack-plugin<br>
+                                <strong>策略：</strong> 自动代码分割、按需加载、生成loadable-stats.json<br>
+                                <strong>优化：</strong> splitChunks配置、提取vendor代码、runtime chunk
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-title">📊 构建优化</div>
+                    <ul class="feature-list">
+                        <li>文件系统缓存</li>
+                        <li>多线程构建 (thread-loader)</li>
+                        <li>Babel缓存</li>
+                        <li>Tree Shaking</li>
+                        <li>CSS提取和压缩</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-title">🔥 开发环境</div>
+                    <ul class="feature-list">
+                        <li>热模块替换 (HMR)</li>
+                        <li>React Fast Refresh</li>
+                        <li>Source Map</li>
+                        <li>实时编译</li>
+                        <li>Nodemon自动重启</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-title">🎨 样式处理</div>
+                    <ul class="feature-list">
+                        <li>CSS Modules支持</li>
+                        <li>Less预处理器</li>
+                        <li>PostCSS处理</li>
+                        <li>Tailwind CSS</li>
+                        <li>自动添加前缀</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="arrow-down">⬇️</div>
+
+        <!-- Phase 2: 服务端渲染阶段 -->
+        <div class="phase server-phase">
+            <div class="phase-title">
+                <div class="phase-icon">2</div>
+                服务端渲染阶段
+            </div>
+
+            <div class="flow-section">
+                <div class="flow-title">🖥️ SSR渲染流程</div>
+                <div class="flow-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <div class="step-title">Koa服务器接收请求</div>
+                            <div class="step-description">
+                                <strong>文件：</strong> <code>app/server/server.ts</code><br>
+                                Koa服务器监听端口，接收所有路由请求 <code>router.get('(.*)')</code>
+                            </div>
+                            <div class="code-snippet">
+<span class="keyword">const</span> app = <span class="keyword">new</span> <span class="function">Koa</span>();
+<span class="keyword">const</span> router = <span class="keyword">new</span> <span class="function">Router</span>();
+
+router.<span class="function">get</span>(<span class="string">'(.*)'</span>, <span class="keyword">async</span> (ctx) => {
+  <span class="comment">// SSR逻辑</span>
+});
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <div class="step-title">初始化ChunkExtractor</div>
+                            <div class="step-description">
+                                <strong>文件：</strong> <code>app/server/index.tsx</code><br>
+                                加载loadable-stats.json，用于收集渲染过程中使用的代码块
+                            </div>
+                            <div class="code-snippet">
+<span class="keyword">const</span> extractor = <span class="keyword">new</span> <span class="function">ChunkExtractor</span>({
+  <span class="keyword">statsFile:</span> <span class="string">'./loadable-stats.json'</span>,
+  <span class="keyword">entrypoints:</span> [<span class="string">'client'</span>]
+});
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <div class="step-title">路由匹配与数据预取</div>
+                            <div class="step-description">
+                                <strong>文件：</strong> <code>app/server/app.tsx</code> - <code>prefetch()</code><br>
+                                使用react-router-dom的matchRoutes匹配路由，执行数据预取逻辑
+                            </div>
+                            <div class="code-snippet">
+<span class="keyword">const</span> prefetchRoutes = <span class="function">matchRoutes</span>(routes, ctx.req.url);
+<span class="keyword">await</span> <span class="function">Promise.allSettled</span>(
+  prefetchRoutes.<span class="function">map</span>(({ route }) =>
+    route.queryKey && queryClient.<span class="function">prefetchQuery</span>({
+      <span class="keyword">queryKey:</span> route.queryKey,
+      <span class="keyword">queryFn:</span> () => route.<span class="function">loadData</span>()
+    })
+  )
+);
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <div class="step-title">创建React组件树</div>
+                            <div class="step-description">
+                                <strong>文件：</strong> <code>app/server/app.tsx</code> - <code>renderApp()</code><br>
+                                使用StaticRouter、QueryClientProvider、HelmetProvider包裹App组件
+                            </div>
+                            <div class="code-snippet">
+<span class="keyword">const</span> jsx = extractor.<span class="function">collectChunks</span>(
+  &lt;<span class="keyword">StaticRouter</span> location={ctx.req.url}&gt;
+    &lt;<span class="keyword">HelmetProvider</span> context={helmetContext}&gt;
+      &lt;<span class="keyword">QueryClientProvider</span> client={queryClient}&gt;
+        &lt;<span class="keyword">HydrationBoundary</span> state={dehydratedState}&gt;
+          &lt;<span class="keyword">App</span> context={ctx} /&gt;
+        &lt;/<span class="keyword">HydrationBoundary</span>&gt;
+      &lt;/<span class="keyword">QueryClientProvider</span>&gt;
+    &lt;/<span class="keyword">HelmetProvider</span>&gt;
+  &lt;/<span class="keyword">StaticRouter</span>&gt;
+);
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <div class="step-title">流式渲染HTML</div>
+                            <div class="step-description">
+                                <strong>文件：</strong> <code>app/server/stream/response.ts</code><br>
+                                使用React 18的renderToPipeableStream进行流式SSR，分阶段输出HTML
+                            </div>
+                            <div class="code-snippet">
+<span class="keyword">const</span> { pipe } = <span class="function">renderToPipeableStream</span>(jsx, {
+  <span class="function">onShellReady</span>() {
+    ctx.res.<span class="function">write</span>(<span class="function">getStartTemplate</span>(...));
+  },
+  <span class="function">onAllReady</span>() {
+    <span class="function">pipe</span>(ctx.res);
+    ctx.res.<span class="function">end</span>(<span class="function">getEndTemplate</span>(...));
+  }
+});
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">6</div>
+                        <div class="step-content">
+                            <div class="step-title">注入脱水状态和资源</div>
+                            <div class="step-description">
+                                <strong>文件：</strong> <code>app/server/htmlTemplate.ts</code><br>
+                                在HTML中注入：<br>
+                                ✓ React Query脱水状态 (<code>__REACT_QUERY_STATE__</code>)<br>
+                                ✓ SSR标识 (<code>__APP_FLAG__</code>)<br>
+                                ✓ CSS链接和样式标签<br>
+                                ✓ JS脚本标签（包含代码分割的chunks）<br>
+                                ✓ Helmet生成的meta标签
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">7</div>
+                        <div class="step-content">
+                            <div class="step-title">返回完整HTML给浏览器</div>
+                            <div class="step-description">
+                                浏览器接收到完整的HTML页面，包含已渲染的React内容和所有必要的资源引用
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-title">⚡ 性能优化</div>
+                    <ul class="feature-list">
+                        <li>流式SSR (Streaming)</li>
+                        <li>渐进式HTML生成</li>
+                        <li>首屏快速响应</li>
+                        <li>错误边界处理</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-title">📡 数据管理</div>
+                    <ul class="feature-list">
+                        <li>React Query预取</li>
+                        <li>状态脱水/水合</li>
+                        <li>自动缓存管理</li>
+                        <li>请求去重</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-title">🎯 SEO支持</div>
+                    <ul class="feature-list">
+                        <li>react-helmet-async</li>
+                        <li>动态meta标签</li>
+                        <li>结构化数据</li>
+                        <li>完整HTML内容</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="arrow-down">⬇️</div>
+
+        <!-- Phase 3: 客户端水合阶段 -->
+        <div class="phase client-phase">
+            <div class="phase-title">
+                <div class="phase-icon">3</div>
+                客户端水合阶段
+            </div>
+
+            <div class="flow-section">
+                <div class="flow-title">💧 Hydration流程</div>
+                <div class="flow-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <div class="step-title">浏览器解析HTML</div>
+                            <div class="step-description">
+                                浏览器接收并解析服务端返回的HTML，展示服务端渲染的内容（此时页面已可见但不可交互）
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <div class="step-title">加载JavaScript资源</div>
+                            <div class="step-description">
+                                浏览器按顺序加载：<br>
+                                ✓ runtime chunk（Webpack运行时）<br>
+                                ✓ vendor chunks（第三方库）<br>
+                                ✓ main chunk（应用主代码）<br>
+                                ✓ 异步chunks（按需加载的代码）
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <div class="step-title">读取脱水状态</div>
+                            <div class="step-description">
+                                <strong>文件：</strong> <code>app/client/index.tsx</code><br>
+                                从HTML中读取两个关键script标签的内容
+                            </div>
+                            <div class="code-snippet">
+<span class="keyword">const</span> <span class="function">getDehydratedState</span> = () => {
+  <span class="keyword">const</span> element = document.<span class="function">querySelector</span>(<span class="string">'#__REACT_QUERY_STATE__'</span>);
+  <span class="keyword">return</span> JSON.<span class="function">parse</span>(element.textContent);
+};
+
+<span class="keyword">const</span> <span class="function">getTradeFlag</span> = () => {
+  <span class="keyword">const</span> element = document.<span class="function">querySelector</span>(<span class="string">'#__APP_FLAG__'</span>);
+  <span class="keyword">return</span> JSON.<span class="function">parse</span>(element.textContent);
+};
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <div class="step-title">等待Loadable准备就绪</div>
+                            <div class="step-description">
+                                使用@loadable/component的loadableReady()，确保所有代码分割的chunks都已加载完成
+                            </div>
+                            <div class="code-snippet">
+<span class="keyword">if</span> (tradeFlag.isSSR) {
+  <span class="function">loadableReady</span>(() => {
+    <span class="function">hydrateRoot</span>(root, &lt;<span class="keyword">ClientApp</span> /&gt;);
+  });
+}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <div class="step-title">执行React Hydration</div>
+                            <div class="step-description">
+                                根据SSR标识选择渲染方式：<br>
+                                <span class="highlight">SSR模式</span>：使用hydrateRoot()进行水合<br>
+                                <span class="highlight">CSR模式</span>：使用createRoot().render()直接渲染
+                            </div>
+                            <div class="code-snippet">
+<span class="keyword">const</span> ClientApp = () => (
+  &lt;<span class="keyword">BrowserRouter</span>&gt;
+    &lt;<span class="keyword">HelmetProvider</span>&gt;
+      &lt;<span class="keyword">QueryClientProvider</span> client={queryClient}&gt;
+        &lt;<span class="keyword">HydrationBoundary</span> state={dehydratedState}&gt;
+          &lt;<span class="keyword">App</span> /&gt;
+        &lt;/<span class="keyword">HydrationBoundary</span>&gt;
+      &lt;/<span class="keyword">QueryClientProvider</span>&gt;
+    &lt;/<span class="keyword">HelmetProvider</span>&gt;
+  &lt;/<span class="keyword">BrowserRouter</span>&gt;
+);
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">6</div>
+                        <div class="step-content">
+                            <div class="step-title">恢复应用状态</div>
+                            <div class="step-description">
+                                React Query使用HydrationBoundary将服务端的状态恢复到客户端QueryClient，避免重复请求
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">7</div>
+                        <div class="step-content">
+                            <div class="step-title">激活交互功能</div>
+                            <div class="step-description">
+                                水合完成后，React接管DOM，绑定事件监听器，应用变为完全可交互状态
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-title">🔄 双模式支持</div>
+                    <ul class="feature-list">
+                        <li>SSR水合模式</li>
+                        <li>CSR渲染模式</li>
+                        <li>智能模式切换</li>
+                        <li>错误降级处理</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-title">📦 代码分割</div>
+                    <ul class="feature-list">
+                        <li>Loadable Components</li>
+                        <li>按路由分割</li>
+                        <li>懒加载组件</li>
+                        <li>预加载优化</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-title">⚙️ 路由管理</div>
+                    <ul class="feature-list">
+                        <li>React Router v7</li>
+                        <li>BrowserRouter</li>
+                        <li>客户端导航</li>
+                        <li>History API</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="arrow-down">⬇️</div>
+
+        <!-- Phase 4: 数据流转阶段 -->
+        <div class="phase data-phase">
+            <div class="phase-title">
+                <div class="phase-icon">4</div>
+                数据流转机制
+            </div>
+
+            <div class="flow-section">
+                <div class="flow-title">🔄 数据预取与同步</div>
+                <div class="flow-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <div class="step-title">路由配置数据预取</div>
+                            <div class="step-description">
+                                <strong>文件：</strong> <code>src/routes/index.tsx</code><br>
+                                路由配置中定义queryKey和loadData函数
+                            </div>
+                            <div class="code-snippet">
+<span class="keyword">const</span> routes = [
+  {
+    <span class="keyword">path:</span> <span class="string">':locales/home'</span>,
+    <span class="keyword">element:</span> &lt;<span class="keyword">Home</span> /&gt;,
+    <span class="keyword">queryKey:</span> [PrefetchKeys.HOME],
+    <span class="keyword">loadData:</span> HomeService.getList
+  }
+];
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <div class="step-title">服务端数据预取</div>
+                            <div class="step-description">
+                                在SSR过程中，根据匹配的路由执行对应的loadData函数，使用React Query的prefetchQuery预取数据
+                            </div>
+                            <div class="code-snippet">
+<span class="keyword">await</span> queryClient.<span class="function">prefetchQuery</span>({
+  <span class="keyword">queryKey:</span> route.queryKey,
+  <span class="keyword">queryFn:</span> () => route.<span class="function">loadData</span>(params)
+});
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <div class="step-title">状态脱水（Dehydration）</div>
+                            <div class="step-description">
+                                使用React Query的dehydrate函数将QueryClient中的所有查询状态序列化为JSON
+                            </div>
+                            <div class="code-snippet">
+<span class="keyword">const</span> dehydratedState = <span class="function">dehydrate</span>(queryClient);
+<span class="keyword">const</span> stateJSON = JSON.<span class="function">stringify</span>(dehydratedState);
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <div class="step-title">注入到HTML</div>
+                            <div class="step-description">
+                                将脱水后的状态通过script标签注入到HTML中，ID为__REACT_QUERY_STATE__
+                            </div>
+                            <div class="code-snippet">
+&lt;script id=<span class="string">"__REACT_QUERY_STATE__"</span> type=<span class="string">"application/json"</span>&gt;
+  ${dehydratedState}
+&lt;/script&gt;
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <div class="step-title">客户端状态水合（Hydration）</div>
+                            <div class="step-description">
+                                客户端读取script标签中的状态，通过HydrationBoundary组件恢复到QueryClient
+                            </div>
+                            <div class="code-snippet">
+&lt;<span class="keyword">HydrationBoundary</span> state={dehydratedState}&gt;
+  &lt;<span class="keyword">App</span> /&gt;
+&lt;/<span class="keyword">HydrationBoundary</span>&gt;
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">6</div>
+                        <div class="step-content">
+                            <div class="step-title">组件使用数据</div>
+                            <div class="step-description">
+                                组件中使用useQuery hook，由于状态已经存在于QueryClient，不会触发新的请求
+                            </div>
+                            <div class="code-snippet">
+<span class="keyword">const</span> { data } = <span class="function">useQuery</span>({
+  <span class="keyword">queryKey:</span> [PrefetchKeys.HOME],
+  <span class="keyword">queryFn:</span> HomeService.getList
+});
+<span class="comment">// 数据来自服务端预取，无需重新请求</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-title">💾 缓存策略</div>
+                    <ul class="feature-list">
+                        <li>自动缓存管理</li>
+                        <li>智能重新验证</li>
+                        <li>后台更新</li>
+                        <li>乐观更新</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-title">🌐 请求优化</div>
+                    <ul class="feature-list">
+                        <li>请求去重</li>
+                        <li>并行请求</li>
+                        <li>失败重试</li>
+                        <li>超时控制</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-title">🎭 状态同步</div>
+                    <ul class="feature-list">
+                        <li>服务端状态脱水</li>
+                        <li>客户端状态水合</li>
+                        <li>状态持久化</li>
+                        <li>跨组件共享</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 开发环境流程 -->
+        <div class="phase" style="border-left-color: #9f7aea;">
+            <div class="phase-title">
+                <div class="phase-icon" style="background: #9f7aea;">🛠️</div>
+                开发环境特殊流程
+            </div>
+
+            <div class="flow-section">
+                <div class="flow-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <div class="step-title">启动开发服务器</div>
+                            <div class="step-description">
+                                <strong>命令：</strong> <code>npm run dev</code><br>
+                                <strong>文件：</strong> <code>scripts/dev.js</code><br>
+                                启动两个webpack编译器：客户端编译器（带HMR）和服务端编译器（watch模式）
+                            </div>
+                            <div class="code-snippet">
+<span class="comment">// 同时启动两个进程</span>
+node scripts/dev.js  <span class="comment">// HMR服务器 (端口8099)</span>
+nodemon build/server.js  <span class="comment">// Koa服务器 (自动重启)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <div class="step-title">HMR工作流程</div>
+                            <div class="step-description">
+                                <strong>客户端：</strong> webpack-hot-middleware监听文件变化，通过WebSocket推送更新<br>
+                                <strong>服务端：</strong> webpack watch模式监听变化，nodemon自动重启服务<br>
+                                <strong>React：</strong> React Fast Refresh保持组件状态
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <div class="step-title">资源代理</div>
+                            <div class="step-description">
+                                Express服务器(8099端口)使用webpack-dev-middleware提供客户端资源<br>
+                                Koa服务器通过/static路径代理访问构建产物
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 生产环境部署 -->
+        <div class="phase" style="border-left-color: #ed8936;">
+            <div class="phase-title">
+                <div class="phase-icon" style="background: #ed8936;">🚀</div>
+                生产环境部署
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-title">🏗️ 构建命令</div>
+                    <ul class="feature-list">
+                        <li>npm run build (本地)</li>
+                        <li>npm run build:beta (测试)</li>
+                        <li>npm run build:online (生产)</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-title">📦 优化策略</div>
+                    <ul class="feature-list">
+                        <li>代码压缩 (Terser)</li>
+                        <li>CSS压缩</li>
+                        <li>Tree Shaking</li>
+                        <li>资源哈希命名</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-title">🌩️ 部署选项</div>
+                    <ul class="feature-list">
+                        <li>传统服务器 (PM2)</li>
+                        <li>Serverless (Lambda)</li>
+                        <li>静态资源CDN</li>
+                        <li>Docker容器化</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 核心优势总结 -->
+        <div class="phase" style="border-left-color: #48bb78;">
+            <div class="phase-title">
+                <div class="phase-icon" style="background: #48bb78;">✨</div>
+                架构核心优势
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature-card" style="border-top-color: #667eea;">
+                    <div class="feature-title">⚡ 性能优越</div>
+                    <ul class="feature-list">
+                        <li>首屏快速渲染 (TTI优化)</li>
+                        <li>流式SSR减少TTFB</li>
+                        <li>代码分割按需加载</li>
+                        <li>智能预取与缓存</li>
+                        <li>并行数据请求</li>
+                    </ul>
+                </div>
+                <div class="feature-card" style="border-top-color: #48bb78;">
+                    <div class="feature-title">🎯 SEO友好</div>
+                    <ul class="feature-list">
+                        <li>完整HTML内容</li>
+                        <li>动态meta标签</li>
+                        <li>结构化数据支持</li>
+                        <li>爬虫友好</li>
+                        <li>社交媒体预览</li>
+                    </ul>
+                </div>
+                <div class="feature-card" style="border-top-color: #ed8936;">
+                    <div class="feature-title">🔧 开发体验</div>
+                    <ul class="feature-list">
+                        <li>React Fast Refresh</li>
+                        <li>TypeScript类型安全</li>
+                        <li>模块热替换</li>
+                        <li>Source Map调试</li>
+                        <li>ESLint代码检查</li>
+                    </ul>
+                </div>
+                <div class="feature-card" style="border-top-color: #9f7aea;">
+                    <div class="feature-title">🌐 灵活部署</div>
+                    <ul class="feature-list">
+                        <li>传统服务器部署</li>
+                        <li>Serverless架构</li>
+                        <li>Docker容器化</li>
+                        <li>多环境配置</li>
+                        <li>CDN静态资源</li>
+                    </ul>
+                </div>
+                <div class="feature-card" style="border-top-color: #fc8181;">
+                    <div class="feature-title">📊 状态管理</div>
+                    <ul class="feature-list">
+                        <li>React Query集成</li>
+                        <li>服务端预取</li>
+                        <li>状态脱水/水合</li>
+                        <li>自动缓存同步</li>
+                        <li>乐观更新支持</li>
+                    </ul>
+                </div>
+                <div class="feature-card" style="border-top-color: #38b2ac;">
+                    <div class="feature-title">🔐 工程化</div>
+                    <ul class="feature-list">
+                        <li>Monorepo结构</li>
+                        <li>多环境配置</li>
+                        <li>构建优化</li>
+                        <li>错误边界处理</li>
+                        <li>性能监控</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 关键文件索引 -->
+        <div class="phase" style="border-left-color: #4299e1;">
+            <div class="phase-title">
+                <div class="phase-icon" style="background: #4299e1;">📁</div>
+                关键文件索引
+            </div>
+
+            <div class="flow-section">
+                <div class="tech-stack">
+                    <div class="tech-item">
+                        <div class="tech-name">Webpack配置</div>
+                        <div class="tech-version">config/webpack.config.js</div>
+                        <div class="tech-version">config/webpack.dev.js</div>
+                        <div class="tech-version">config/webpack.prod.js</div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-name">服务端入口</div>
+                        <div class="tech-version">app/server/server.ts</div>
+                        <div class="tech-version">app/server/index.tsx</div>
+                        <div class="tech-version">app/server/app.tsx</div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-name">客户端入口</div>
+                        <div class="tech-version">app/client/index.tsx</div>
+                        <div class="tech-version">src/index.tsx</div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-name">渲染模板</div>
+                        <div class="tech-version">app/server/htmlTemplate.ts</div>
+                        <div class="tech-version">app/server/html.tsx</div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-name">流式渲染</div>
+                        <div class="tech-version">app/server/stream/response.ts</div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-name">路由配置</div>
+                        <div class="tech-version">src/routes/index.tsx</div>
+                        <div class="tech-version">app/utils/routesTypes.ts</div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-name">开发脚本</div>
+                        <div class="tech-version">scripts/dev.js</div>
+                        <div class="tech-version">nodemon.json</div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-name">代码分割</div>
+                        <div class="tech-version">app/utils/loadable.tsx</div>
+                        <div class="tech-version">build/loadable-stats.json</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;">
+            <h2 style="margin-bottom: 10px;">🎉 完整的SSR解决方案</h2>
+            <p style="font-size: 1.1em; opacity: 0.9;">
+                从Webpack构建到服务端渲染，再到客户端水合，实现了一套完整、高效、可维护的React服务端渲染架构
+            </p>
+        </div>
+    </div>
+</body>
+</html>

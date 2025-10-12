@@ -30,7 +30,7 @@ const getDehydratedState = () => {
     if (!element?.textContent) return {};
     return JSON.parse(element.textContent);
   } catch (error) {
-    console.error('Failed to parse dehydrated state:', error);
+    console.error("Failed to parse dehydrated state:", error);
     return {};
   }
 };
@@ -41,7 +41,7 @@ const getTradeFlag = (): TradeFlagType => {
     if (!element?.textContent) return { isSSR: false };
     return JSON.parse(element.textContent);
   } catch (error) {
-    console.error('Failed to parse trade flag:', error);
+    console.error("Failed to parse trade flag:", error);
     return { isSSR: false };
   }
 };
@@ -64,24 +64,17 @@ const ClientApp = () => (
 const root = document.querySelector("#root");
 
 if (!root) {
-  throw new Error('Root element not found');
+  throw new Error("Root element not found");
 }
 
-// 添加错误边界
-const renderWithErrorBoundary = () => {
-  try {
-    if (tradeFlag.isSSR) {
-      loadableReady(() => {
-        hydrateRoot(root, <ClientApp />);
-      });
-    } else {
-      createRoot(root).render(<ClientApp />);
-    }
-  } catch (error) {
-    console.error('Client rendering error:', error);
-    // 降级到非SSR模式
+const renderApp = () => {
+  if (tradeFlag.isSSR) {
+    loadableReady(() => {
+      hydrateRoot(root, <ClientApp />);
+    });
+  } else {
     createRoot(root).render(<ClientApp />);
   }
 };
 
-renderWithErrorBoundary();
+renderApp();

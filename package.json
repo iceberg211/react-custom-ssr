@@ -111,6 +111,7 @@
     "webpack-manifest-plugin": "^5.0.0",
     "webpack-merge": "^5.8.0",
     "webpack-node-externals": "^3.0.0",
-    "webpackbar": "^5.0.2"
+    "webpackbar": "^5.0.2",
+    "wrangler": "^4.36.0"
   }
 }
