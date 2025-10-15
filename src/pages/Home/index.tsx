@@ -1,8 +1,8 @@
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { useParams, Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
 import { PrefetchKeys } from "apis/queryKeys";
 import HomeService from "apis/services/Home";
-import { useEffect } from "react";
+import ViewTransitionLink from "@app/client/ViewTransitionLink";
 
 const Home = () => {
   const params = useParams();
@@ -12,15 +12,19 @@ const Home = () => {
   });
 
   return (
-    <main>
-      <header className="w-full flex justify-center items-center h-[58px] text-green-300 bg-primary">
+    <main className="vt-page min-h-screen bg-neutral-900 text-white">
+      <header className="vt-header w-full flex justify-center items-center h-[58px] text-green-300 bg-primary">
         header
-        <Link className="ml-4 text-brand" to="/about">
+        <ViewTransitionLink
+          className="ml-4 text-brand underline"
+          to="/about"
+          viewTransitionName="page-link"
+        >
           about
-        </Link>
+        </ViewTransitionLink>
       </header>
-      <main>
-        Home
+      <section className="px-6 py-4">
+        <h1 className="text-2xl font-semibold mb-4">Home</h1>
         <ul>
           {coinList.data?.map((i) => (
             <li
@@ -33,7 +37,7 @@ const Home = () => {
             </li>
           ))}
         </ul>
-      </main>
+      </section>
       <footer>footer</footer>
     </main>
   );

@@ -74,6 +74,7 @@ const common = {
 
 const baseClientConfig = (env) => {
   const isDevelopment = /^dev/.test(env.mode);
+  const enableProfile = process.env.PROFILE === "true";
 
   return merge(common, {
     name: `client:${name}`,
@@ -86,6 +87,14 @@ const baseClientConfig = (env) => {
       publicPath: `/static/client/`,
       clean: true,
     },
+    ...(enableProfile && {
+      resolve: {
+        alias: {
+          "react-dom/client": "react-dom/profiling",
+          "scheduler/tracing": "scheduler/tracing-profiling",
+        },
+      },
+    }),
     module: {
       rules: [
         // styles

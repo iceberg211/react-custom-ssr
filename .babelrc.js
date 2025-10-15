@@ -24,6 +24,12 @@ module.exports = (api) => {
     plugins: [
       "@loadable/babel-plugin",
       [
+        "babel-plugin-react-compiler",
+        {
+          target: "19",
+        },
+      ],
+      [
         "@babel/plugin-transform-react-jsx",
         {
           runtime: "automatic",

@@ -7,3 +7,60 @@
   --color-secondary: #ff00ff;
   --color-brand: #1E90FF;
 }
+
+.vt-page {
+  view-transition-name: page-container;
+}
+
+.vt-header {
+  view-transition-name: page-header;
+}
+
+::view-transition-old(page-container),
+::view-transition-new(page-container) {
+  animation: fade-in-out 0.35s ease;
+}
+
+::view-transition-old(page-header) {
+  animation: slide-up 0.35s ease;
+  transform-origin: top center;
+}
+
+::view-transition-new(page-header) {
+  animation: slide-down 0.35s ease;
+  transform-origin: top center;
+}
+
+@keyframes fade-in-out {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

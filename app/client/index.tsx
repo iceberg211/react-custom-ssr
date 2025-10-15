@@ -1,3 +1,4 @@
+import { Profiler, type ProfilerOnRenderCallback } from "react";
 import { hydrateRoot, createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { loadableReady } from "@loadable/component";
@@ -49,6 +50,35 @@ const getTradeFlag = (): TradeFlagType => {
 const dehydratedState = getDehydratedState();
 const tradeFlag = getTradeFlag();
 
+const enableProfiler = process.env.PROFILE === "true";
+const profilerId = "client-app";
+
+const onProfilerRender: ProfilerOnRenderCallback = (
+  id,
+  phase,
+  actualDuration,
+  baseDuration,
+  startTime,
+  commitTime
+) => {
+  if (typeof performance !== "undefined" && performance.mark) {
+    performance.mark(
+      `[Profiler][${id}] phase=${phase} actual=${actualDuration.toFixed(
+        2
+      )} base=${baseDuration.toFixed(2)} start=${startTime.toFixed(
+        2
+      )} commit=${commitTime.toFixed(2)}`
+    );
+  }
+
+  if (process.env.NODE_ENV !== "production") {
+    console.info(
+      `[Profiler][${id}]`,
+      { phase, actualDuration, baseDuration, startTime, commitTime }
+    );
+  }
+};
+
 const ClientApp = () => (
   <BrowserRouter>
     <HelmetProvider>
@@ -68,12 +98,20 @@ if (!root) {
 }
 
 const renderApp = () => {
+  const appTree = enableProfiler ? (
+    <Profiler id={profilerId} onRender={onProfilerRender}>
+      <ClientApp />
+    </Profiler>
+  ) : (
+    <ClientApp />
+  );
+
   if (tradeFlag.isSSR) {
     loadableReady(() => {
-      hydrateRoot(root, <ClientApp />);
+      hydrateRoot(root, appTree);
     });
   } else {
-    createRoot(root).render(<ClientApp />);
+    createRoot(root).render(appTree);
   }
 };
 
