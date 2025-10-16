@@ -22,6 +22,7 @@ module.exports = (api) => {
       ["@babel/preset-typescript", {}],
     ],
     plugins: [
+      'babel-plugin-react-compiler',
       "@loadable/babel-plugin",
       [
         "@babel/plugin-transform-react-jsx",

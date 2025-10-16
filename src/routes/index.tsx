@@ -12,6 +12,12 @@ const routes: PreFetchRouteObject[] = [
     element: <Index />,
     children: [
       {
+        index: true,
+        element: <Home />,
+        queryKey: [PrefetchKeys.HOME],
+        loadData: HomeService.getList,
+      },
+      {
         path: ":locales/home",
         element: <Home />,
         queryKey: [PrefetchKeys.HOME],
