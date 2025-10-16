@@ -62,7 +62,7 @@
     "aws-cdk-lib": "^2.86.0",
     "aws-lambda": "^1.0.7",
     "babel-loader": "^9.1.2",
-    "babel-plugin-react-compiler": "^0.0.0-experimental-9e3abd9-20240917",
+    "babel-plugin-react-compiler": "19.1.0-rc.3",
     "babel-plugin-transform-commonjs": "^1.1.6",
     "chalk": "4.1.2",
     "circular-dependency-plugin": "^5.2.2",
