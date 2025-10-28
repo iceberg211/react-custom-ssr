@@ -30,3 +30,8 @@ yarn-error.log*
 # CDK asset staging directory
 .cdk.staging
 cdk.out
+
+# Cloudflare Workers
+.wrangler/
+wrangler.toml.bak
+.dev.vars
