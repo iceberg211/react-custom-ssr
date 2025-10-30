@@ -1,0 +1,26 @@
+# Wrangler 配置文件
+name = "react-cf-worker"
+main = "build/serverless.js"
+compatibility_date = "2025-10-30"
+
+# Node.js 兼容性标志
+compatibility_flags = ["nodejs_compat"]
+
+# 静态资源配置（Cloudflare Assets）
+[assets]
+directory = "./build/client"
+binding = "ASSETS"
+
+# 环境变量
+[vars]
+NODE_ENV = "cloudflare"
+
+# 可选：生产环境配置
+# [env.production]
+# name = "react-cf-worker-production"
+# vars = { NODE_ENV = "production" }
+
+# 可选：开发环境配置
+# [env.development]
+# name = "react-cf-worker-dev"
+# vars = { NODE_ENV = "development" }

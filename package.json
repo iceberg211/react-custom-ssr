@@ -9,6 +9,9 @@
     "build:online": "webpack build --config ./config/webpack.prod.js --env goal=online",
     "build:beta": "webpack build --config ./config/webpack.prod.js --env goal=beta",
     "build:test1": "webpack build --config ./config/webpack.prod.js --env goal=test1",
+    "build:cloudflare": "webpack build --config ./config/webpack.prod.js --env goal=online",
+    "dev:wrangler": "wrangler dev",
+    "deploy:production": "pnpm build:online && wrangler deploy",
     "start": "pm2 start ./ecosystem.config.js",
     "mock": "json-server --watch ./mocks/data.json --port 8007"
   },
@@ -36,6 +39,7 @@
     "serverless-http": "^3.2.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20251014.0",
     "@babel/core": "^7.21.4",
     "@babel/plugin-transform-react-jsx": "^7.21.0",
     "@babel/preset-env": "^7.21.4",
@@ -114,6 +118,6 @@
     "webpack-merge": "^5.8.0",
     "webpack-node-externals": "^3.0.0",
     "webpackbar": "^5.0.2",
-    "wrangler": "^4.36.0"
+    "wrangler": "^4.45.1"
   }
 }
