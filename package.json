@@ -9,9 +9,9 @@
     "build:online": "webpack build --config ./config/webpack.prod.js --env goal=online",
     "build:beta": "webpack build --config ./config/webpack.prod.js --env goal=beta",
     "build:test1": "webpack build --config ./config/webpack.prod.js --env goal=test1",
-    "build:cloudflare": "webpack build --config ./config/webpack.prod.js --env goal=online",
-    "dev:wrangler": "wrangler dev",
-    "deploy:production": "pnpm build:online && wrangler deploy",
+    "build:cloudflare": "webpack build --config ./config/webpack.cloudflare.config.js --env goal=cloudflare",
+    "dev:wrangler": "pnpm build:cloudflare && wrangler dev",
+    "deploy:cloudflare": "pnpm build:cloudflare && wrangler deploy",
     "start": "pm2 start ./ecosystem.config.js",
     "mock": "json-server --watch ./mocks/data.json --port 8007"
   },
